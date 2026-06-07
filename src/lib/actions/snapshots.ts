@@ -38,8 +38,19 @@ export async function createSnapshot(
     return { error: '対象月を選択してください。' }
   }
 
+  // YYYY-MM 形式バリデーション（Safari など type="month" 非対応ブラウザ対策）
+  if (!/^\d{4}-\d{2}$/.test(snapshotMonth)) {
+    return { error: '対象月の形式が正しくありません。（例: 2026-06）' }
+  }
+
+  const [yearStr, monthStr] = snapshotMonth.split('-')
+  const month = parseInt(monthStr, 10)
+  if (month < 1 || month > 12) {
+    return { error: '対象月に正しい月（01〜12）を入力してください。' }
+  }
+
   // snapshot_month を月初日の date 型にする (YYYY-MM-01)
-  const snapshotDate = `${snapshotMonth}-01`
+  const snapshotDate = `${yearStr}-${monthStr}-01`
 
   const totalAmount =
     cashAmount +
