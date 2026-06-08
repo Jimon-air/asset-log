@@ -105,10 +105,10 @@ export default async function Home() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-black/[.06] dark:border-white/[.08]">
-                    {['月', '現金', '投資信託', '株式', '買付余力', 'その他', '合計', '前月比'].map(
-                      (col) => (
+                    {['月', '現金', '投資信託', '株式', '買付余力', 'その他', '合計', '前月比', ''].map(
+                      (col, i) => (
                         <th
-                          key={col}
+                          key={i}
                           className="px-4 py-3 text-right text-xs font-medium text-zinc-500 first:text-left dark:text-zinc-400"
                         >
                           {col}
@@ -164,6 +164,14 @@ export default async function Home() {
                         </td>
                         <td className={`px-4 py-3 text-right font-medium ${momColor}`}>
                           {momText}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/snapshots/${row.id}/edit`}
+                            className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
+                          >
+                            編集
+                          </Link>
                         </td>
                       </tr>
                     )
