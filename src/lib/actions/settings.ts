@@ -38,6 +38,7 @@ export async function upsertGoalAmount(
     )
 
   if (upsertError) {
+    console.error('[upsertGoalAmount] Supabase error:', upsertError.code, upsertError.message, upsertError.details)
     return { error: '保存に失敗しました。もう一度お試しください。' }
   }
 
