@@ -155,6 +155,39 @@ export async function updateSnapshot(
   redirect('/')
 }
 
+export async function deleteSnapshot(
+  _prev: SnapshotFormState,
+  formData: FormData
+): Promise<SnapshotFormState> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: 'ログインが必要です。' }
+  }
+
+  const id = formData.get('id') as string
+  if (!id) {
+    return { error: '不正なリクエストです。' }
+  }
+
+  const { error: deleteError } = await supabase
+    .from('asset_snapshots')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (deleteError) {
+    return { error: '削除に失敗しました。もう一度お試しください。' }
+  }
+
+  redirect('/')
+}
+
 function parseAmount(value: string): number {
   if (!value) return 0
   // カンマを除去して整数にパース
