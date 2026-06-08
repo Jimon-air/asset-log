@@ -17,6 +17,18 @@
 - Next.js / TypeScript / Tailwind CSS / Supabase / Recharts / Vercel
 - App Router・`src/`ディレクトリ構成
 
+## ブランチ作成ルール
+必ず main を pull してからブランチを切ること。
+git checkout main && git pull origin main && git checkout -b feature/xxx
+
+## 画面共通ルール
+- 各画面には必ずホーム（/）へ戻る導線を設置すること
+- フォーム送信後のリダイレクト先は基本的にホーム（/）とする
+
+## ブラケットを含むディレクトリの作成
+mkdir でブラケット（[]）を含むパスを作る場合はシングルクォートで囲む。
+例：mkdir -p '/path/to/[id]/edit'
+
 ## DB構造（asset_snapshots）
 - id, user_id, snapshot_month, cash_amount, investment_trust_amount, stock_amount, buying_power_amount, other_amount, total_amount, memo, created_at, updated_at
 - unique(user_id, snapshot_month)
