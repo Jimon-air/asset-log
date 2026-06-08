@@ -96,6 +96,65 @@ export async function createSnapshot(
   redirect('/')
 }
 
+export async function updateSnapshot(
+  _prev: SnapshotFormState,
+  formData: FormData
+): Promise<SnapshotFormState> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: 'ログインが必要です。' }
+  }
+
+  const id = formData.get('id') as string
+  if (!id) {
+    return { error: '不正なリクエストです。' }
+  }
+
+  const cashAmount = parseAmount(formData.get('cash_amount') as string)
+  const investmentTrustAmount = parseAmount(
+    formData.get('investment_trust_amount') as string
+  )
+  const stockAmount = parseAmount(formData.get('stock_amount') as string)
+  const buyingPowerAmount = parseAmount(
+    formData.get('buying_power_amount') as string
+  )
+  const otherAmount = parseAmount(formData.get('other_amount') as string)
+  const memo = (formData.get('memo') as string).trim() || null
+
+  const totalAmount =
+    cashAmount +
+    investmentTrustAmount +
+    stockAmount +
+    buyingPowerAmount +
+    otherAmount
+
+  const { error: updateError } = await supabase
+    .from('asset_snapshots')
+    .update({
+      cash_amount: cashAmount,
+      investment_trust_amount: investmentTrustAmount,
+      stock_amount: stockAmount,
+      buying_power_amount: buyingPowerAmount,
+      other_amount: otherAmount,
+      total_amount: totalAmount,
+      memo,
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (updateError) {
+    return { error: '更新に失敗しました。もう一度お試しください。' }
+  }
+
+  redirect('/')
+}
+
 function parseAmount(value: string): number {
   if (!value) return 0
   // カンマを除去して整数にパース
