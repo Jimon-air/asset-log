@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import AssetsBarChart, { type ChartData } from '@/components/AssetsBarChart'
+import DeleteSnapshotButton from '@/components/DeleteSnapshotButton'
 
 type Snapshot = {
   id: string
@@ -166,12 +167,15 @@ export default async function Home() {
                           {momText}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/snapshots/${row.id}/edit`}
-                            className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
-                          >
-                            編集
-                          </Link>
+                          <div className="flex items-center justify-end gap-3">
+                            <Link
+                              href={`/snapshots/${row.id}/edit`}
+                              className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
+                            >
+                              編集
+                            </Link>
+                            <DeleteSnapshotButton id={row.id} />
+                          </div>
                         </td>
                       </tr>
                     )
