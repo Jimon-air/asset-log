@@ -41,13 +41,20 @@ export default async function Home() {
     redirect('/login')
   }
 
-  const { data: snapshots, error } = await supabase
-    .from('asset_snapshots')
-    .select(
-      'id, snapshot_month, cash_amount, investment_trust_amount, stock_amount, buying_power_amount, other_amount, total_amount, memo'
-    )
-    .eq('user_id', user.id)
-    .order('snapshot_month', { ascending: false })
+  const [{ data: snapshots, error }, { data: settings }] = await Promise.all([
+    supabase
+      .from('asset_snapshots')
+      .select(
+        'id, snapshot_month, cash_amount, investment_trust_amount, stock_amount, buying_power_amount, other_amount, total_amount, memo'
+      )
+      .eq('user_id', user.id)
+      .order('snapshot_month', { ascending: false }),
+    supabase
+      .from('user_settings')
+      .select('goal_amount')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+  ])
 
   if (error) {
     throw new Error('データの取得に失敗しました。')
@@ -76,12 +83,20 @@ export default async function Home() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Asset Log
           </h1>
-          <Link
-            href="/snapshots/new"
-            className="flex h-9 items-center rounded-full bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-zinc-700 dark:hover:bg-zinc-200"
-          >
-            新規入力
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings"
+              className="flex h-9 items-center rounded-full border border-black/[.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-zinc-100 dark:border-white/[.1] dark:hover:bg-zinc-800"
+            >
+              設定
+            </Link>
+            <Link
+              href="/snapshots/new"
+              className="flex h-9 items-center rounded-full bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-zinc-700 dark:hover:bg-zinc-200"
+            >
+              新規入力
+            </Link>
+          </div>
         </div>
 
         {rows.length === 0 ? (
@@ -98,7 +113,7 @@ export default async function Home() {
             {/* グラフ */}
             <div className="mb-8 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
               <p className="mb-4 text-sm font-medium text-foreground">資産推移（万円）</p>
-              <AssetsBarChart data={chartData} />
+              <AssetsBarChart data={chartData} goalAmount={settings?.goal_amount ?? undefined} />
             </div>
 
             {/* テーブル */}

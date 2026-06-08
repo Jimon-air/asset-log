@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
 
@@ -32,7 +33,7 @@ function formatYAxis(value: number) {
   return `${value}万`
 }
 
-export default function AssetsBarChart({ data }: { data: ChartData[] }) {
+export default function AssetsBarChart({ data, goalAmount }: { data: ChartData[]; goalAmount?: number }) {
   if (data.length === 0) {
     return (
       <div className="flex h-52 items-center justify-center text-sm text-zinc-400">
@@ -70,6 +71,14 @@ export default function AssetsBarChart({ data }: { data: ChartData[] }) {
         {SERIES.map(({ key, color }) => (
           <Bar key={key} dataKey={key} stackId="a" fill={color} />
         ))}
+        {goalAmount != null && (
+          <ReferenceLine
+            y={Math.round(goalAmount / 10000)}
+            stroke="#f59e0b"
+            strokeDasharray="4 4"
+            label={{ value: '目標', fill: '#f59e0b', fontSize: 11, position: 'insideTopRight' }}
+          />
+        )}
       </BarChart>
     </ResponsiveContainer>
   )
