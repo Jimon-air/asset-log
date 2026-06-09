@@ -6,6 +6,14 @@
 
 ---
 
+## スクリーンショット
+
+| ホーム | 新規入力 | 設定 |
+|---|---|---|
+| ![ホーム画面](public/screenshots/home.png) | ![新規入力画面](public/screenshots/new.png) | ![設定画面](public/screenshots/settings.png) |
+
+---
+
 ## 機能一覧
 
 - **月次スナップショット記録** — 現金・投資信託・株・買付余力・その他の5カテゴリで資産を入力
