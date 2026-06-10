@@ -63,8 +63,8 @@ export default function NewSnapshotPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-sm">
+    <div className="min-h-full bg-background px-4 py-10">
+      <div className="w-full max-w-md">
         <h1 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
           資産を記録する
         </h1>

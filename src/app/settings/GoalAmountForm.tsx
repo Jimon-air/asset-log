@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useActionState, useState } from 'react'
 import { upsertGoalAmount, type SettingsFormState } from '@/lib/actions/settings'
 
@@ -20,18 +19,11 @@ export default function GoalAmountForm({ initialGoalAmount }: { initialGoalAmoun
   )
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">設定</h1>
-          <Link
-            href="/"
-            className="text-sm text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
-          >
-            ← トップへ
-          </Link>
-        </div>
+    <div className="min-h-full bg-background px-4 py-10">
+      <div className="w-full max-w-md">
+        <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">設定</h1>
 
+        <div className="rounded-xl border border-black/[.08] bg-white p-6 dark:border-white/[.1] dark:bg-zinc-900">
         <form action={formAction} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="goal_amount" className="text-sm font-medium text-foreground">
@@ -62,6 +54,7 @@ export default function GoalAmountForm({ initialGoalAmount }: { initialGoalAmoun
             {pending ? '保存中...' : '保存する'}
           </button>
         </form>
+        </div>
       </div>
     </div>
   )
