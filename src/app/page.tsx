@@ -75,29 +75,8 @@ export default async function Home() {
     }))
 
   return (
-    <div className="min-h-full bg-background px-4 py-10">
-      <div className="mx-auto w-full max-w-3xl">
-
-        {/* ヘッダー */}
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Asset Log
-          </h1>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/settings"
-              className="flex h-9 items-center rounded-full border border-black/[.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-zinc-100 dark:border-white/[.1] dark:hover:bg-zinc-800"
-            >
-              設定
-            </Link>
-            <Link
-              href="/snapshots/new"
-              className="flex h-9 items-center rounded-full bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-zinc-700 dark:hover:bg-zinc-200"
-            >
-              新規入力
-            </Link>
-          </div>
-        </div>
+    <div className="min-h-full bg-background px-4 py-8">
+      <div className="mx-auto w-full max-w-6xl">
 
         {rows.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
