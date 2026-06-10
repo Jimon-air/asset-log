@@ -89,6 +89,16 @@ export default async function Home() {
           </div>
         ) : (
           <>
+            {/* 保有銘柄導線 */}
+            <div className="mb-4 flex justify-end">
+              <Link
+                href="/holdings"
+                className="text-sm text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
+              >
+                保有銘柄を管理 →
+              </Link>
+            </div>
+
             {/* グラフ */}
             <div className="mb-8 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
               <p className="mb-4 text-sm font-medium text-foreground">資産推移（万円）</p>
