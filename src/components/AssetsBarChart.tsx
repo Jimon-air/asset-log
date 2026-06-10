@@ -43,7 +43,7 @@ export default function AssetsBarChart({ data, goalAmount }: { data: ChartData[]
   }
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={320}>
       <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.08} />
         <XAxis
