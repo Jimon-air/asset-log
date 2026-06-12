@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { generateAssetComment } from '@/lib/gemini'
 
 export type SnapshotFormState = {
   error?: string
@@ -75,7 +76,7 @@ export async function createSnapshot(
     return { error: 'この月のデータはすでに登録されています。' }
   }
 
-  const { error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await supabase
     .from('asset_snapshots')
     .insert({
       user_id: user.id,
@@ -88,9 +89,51 @@ export async function createSnapshot(
       total_amount: totalAmount,
       memo,
     })
+    .select('id')
+    .single()
 
   if (insertError) {
     return { error: '登録に失敗しました。もう一度お試しください。' }
+  }
+
+  // 前月データ取得（前月比計算用）
+  const { data: prevSnapshot } = await supabase
+    .from('asset_snapshots')
+    .select('total_amount')
+    .eq('user_id', user.id)
+    .lt('snapshot_month', snapshotDate)
+    .order('snapshot_month', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const { data: userSettings } = await supabase
+    .from('user_settings')
+    .select('goal_amount')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const goalAmount = userSettings?.goal_amount ?? null
+  const diffFromPrev = prevSnapshot ? totalAmount - prevSnapshot.total_amount : null
+  const achievementRate = goalAmount ? (totalAmount / goalAmount) * 100 : null
+
+  const aiComment = await generateAssetComment({
+    totalAmount,
+    cashAmount,
+    investmentTrustAmount,
+    stockAmount,
+    buyingPowerAmount,
+    otherAmount,
+    diffFromPrev,
+    goalAmount,
+    achievementRate,
+  })
+
+  if (aiComment && inserted?.id) {
+    await supabase
+      .from('asset_snapshots')
+      .update({ ai_comment: aiComment })
+      .eq('id', inserted.id)
+      .eq('user_id', user.id)
   }
 
   redirect('/')
@@ -134,7 +177,7 @@ export async function updateSnapshot(
     buyingPowerAmount +
     otherAmount
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('asset_snapshots')
     .update({
       cash_amount: cashAmount,
@@ -147,9 +190,54 @@ export async function updateSnapshot(
     })
     .eq('id', id)
     .eq('user_id', user.id)
+    .select('snapshot_month')
+    .single()
 
   if (updateError) {
     return { error: '更新に失敗しました。もう一度お試しください。' }
+  }
+
+  // 前月データ取得（前月比計算用）
+  const snapshotDate = updated?.snapshot_month ?? null
+  const { data: prevSnapshot } = snapshotDate
+    ? await supabase
+        .from('asset_snapshots')
+        .select('total_amount')
+        .eq('user_id', user.id)
+        .lt('snapshot_month', snapshotDate)
+        .order('snapshot_month', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null }
+
+  const { data: userSettings } = await supabase
+    .from('user_settings')
+    .select('goal_amount')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const goalAmount = userSettings?.goal_amount ?? null
+  const diffFromPrev = prevSnapshot ? totalAmount - prevSnapshot.total_amount : null
+  const achievementRate = goalAmount ? (totalAmount / goalAmount) * 100 : null
+
+  const aiComment = await generateAssetComment({
+    totalAmount,
+    cashAmount,
+    investmentTrustAmount,
+    stockAmount,
+    buyingPowerAmount,
+    otherAmount,
+    diffFromPrev,
+    goalAmount,
+    achievementRate,
+  })
+
+  if (aiComment) {
+    await supabase
+      .from('asset_snapshots')
+      .update({ ai_comment: aiComment })
+      .eq('id', id)
+      .eq('user_id', user.id)
   }
 
   redirect('/')

@@ -14,6 +14,7 @@ type Snapshot = {
   other_amount: number
   total_amount: number
   memo: string | null
+  ai_comment: string | null
 }
 
 function toMan(yen: number) {
@@ -45,7 +46,7 @@ export default async function Home() {
     supabase
       .from('asset_snapshots')
       .select(
-        'id, snapshot_month, cash_amount, investment_trust_amount, stock_amount, buying_power_amount, other_amount, total_amount, memo'
+        'id, snapshot_month, cash_amount, investment_trust_amount, stock_amount, buying_power_amount, other_amount, total_amount, memo, ai_comment'
       )
       .eq('user_id', user.id)
       .order('snapshot_month', { ascending: false }),
@@ -104,6 +105,16 @@ export default async function Home() {
               <p className="mb-4 text-sm font-medium text-foreground">資産推移（万円）</p>
               <AssetsBarChart data={chartData} goalAmount={settings?.goal_amount ?? undefined} />
             </div>
+
+            {/* AIコメント */}
+            {rows[0]?.ai_comment && (
+              <div className="mb-8 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
+                <p className="mb-2 text-sm font-medium text-foreground">AI コメント ✨</p>
+                <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                  {rows[0].ai_comment}
+                </p>
+              </div>
+            )}
 
             {/* テーブル */}
             <div className="overflow-x-auto rounded-xl border border-black/[.08] bg-white dark:border-white/[.1] dark:bg-zinc-900">
