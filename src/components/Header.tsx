@@ -9,6 +9,12 @@ export default function Header() {
         </Link>
         <div className="flex items-center gap-2">
           <Link
+            href="/holdings"
+            className="flex h-9 items-center rounded-full border border-black/[.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-zinc-100 dark:border-white/[.1] dark:hover:bg-zinc-800"
+          >
+            保有銘柄
+          </Link>
+          <Link
             href="/settings"
             className="flex h-9 items-center rounded-full border border-black/[.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-zinc-100 dark:border-white/[.1] dark:hover:bg-zinc-800"
           >

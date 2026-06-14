@@ -164,7 +164,7 @@ export default function NewSnapshotPage() {
             disabled={pending}
             className="flex h-10 items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:hover:bg-zinc-200"
           >
-            {pending ? '登録中...' : '登録する'}
+            {pending ? 'AIコメント生成中...' : '登録する'}
           </button>
         </form>
       </div>

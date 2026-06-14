@@ -1,3 +1,4 @@
+import React from 'react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -90,15 +91,52 @@ export default async function Home() {
           </div>
         ) : (
           <>
-            {/* 保有銘柄導線 */}
-            <div className="mb-4 flex justify-end">
-              <Link
-                href="/holdings"
-                className="text-sm text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
-              >
-                保有銘柄を管理 →
-              </Link>
-            </div>
+            {/* 目標達成サマリーカード */}
+            {(() => {
+              const latest = rows[0]
+              const goal = settings?.goal_amount ?? null
+              if (!latest || !goal) return null
+              const remaining = goal - latest.total_amount
+              const rate = (latest.total_amount / goal) * 100
+              const achieved = remaining <= 0
+              return (
+                <div className="mb-6 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
+                  <p className="mb-3 text-sm font-medium text-foreground">目標達成状況</p>
+                  <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+                    <div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">現在の総資産</p>
+                      <p className="text-xl font-semibold text-foreground">
+                        {formatAmount(latest.total_amount)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">目標額</p>
+                      <p className="text-xl font-semibold text-foreground">{formatAmount(goal)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {achieved ? '達成！' : '残り'}
+                      </p>
+                      <p className={`text-xl font-semibold ${achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                        {achieved ? '🎉' : formatAmount(remaining)}
+                      </p>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">達成率</p>
+                      <p className={`text-2xl font-bold ${achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                        {rate.toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                    <div
+                      className={`h-full rounded-full transition-all ${achieved ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                      style={{ width: `${Math.min(rate, 100).toFixed(1)}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* グラフ */}
             <div className="mb-8 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
@@ -106,7 +144,7 @@ export default async function Home() {
               <AssetsBarChart data={chartData} goalAmount={settings?.goal_amount ?? undefined} />
             </div>
 
-            {/* AIコメント */}
+            {/* 最新月AIコメント */}
             {rows[0]?.ai_comment && (
               <div className="mb-8 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
                 <p className="mb-2 text-sm font-medium text-foreground">AI コメント ✨</p>
@@ -153,9 +191,9 @@ export default async function Home() {
                     }
 
                     return (
+                      <React.Fragment key={row.id}>
                       <tr
-                        key={row.id}
-                        className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]"
+                        className={`${row.ai_comment ? '' : 'border-b border-black/[.04] last:border-0 dark:border-white/[.05]'}`}
                       >
                         <td className="px-4 py-3 font-medium text-foreground">
                           {formatMonth(row.snapshot_month)}
@@ -193,6 +231,17 @@ export default async function Home() {
                           </div>
                         </td>
                       </tr>
+                      {row.ai_comment && (
+                        <tr className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]">
+                          <td
+                            colSpan={9}
+                            className="px-4 pb-3 pt-0 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500"
+                          >
+                            ✨ {row.ai_comment}
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     )
                   })}
                 </tbody>

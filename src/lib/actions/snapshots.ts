@@ -177,6 +177,19 @@ export async function updateSnapshot(
     buyingPowerAmount +
     otherAmount
 
+  const { data: existing, error: fetchError } = await supabase
+    .from('asset_snapshots')
+    .select('total_amount, snapshot_month')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+
+  if (fetchError || !existing) {
+    return { error: '更新対象が見つかりませんでした。' }
+  }
+
+  const amountChanged = existing.total_amount !== totalAmount
+
   const { data: updated, error: updateError } = await supabase
     .from('asset_snapshots')
     .update({
@@ -220,24 +233,26 @@ export async function updateSnapshot(
   const diffFromPrev = prevSnapshot ? totalAmount - prevSnapshot.total_amount : null
   const achievementRate = goalAmount ? (totalAmount / goalAmount) * 100 : null
 
-  const aiComment = await generateAssetComment({
-    totalAmount,
-    cashAmount,
-    investmentTrustAmount,
-    stockAmount,
-    buyingPowerAmount,
-    otherAmount,
-    diffFromPrev,
-    goalAmount,
-    achievementRate,
-  })
+  if (amountChanged) {
+    const aiComment = await generateAssetComment({
+      totalAmount,
+      cashAmount,
+      investmentTrustAmount,
+      stockAmount,
+      buyingPowerAmount,
+      otherAmount,
+      diffFromPrev,
+      goalAmount,
+      achievementRate,
+    })
 
-  if (aiComment) {
-    await supabase
-      .from('asset_snapshots')
-      .update({ ai_comment: aiComment })
-      .eq('id', id)
-      .eq('user_id', user.id)
+      if (aiComment) {
+        await supabase
+          .from('asset_snapshots')
+          .update({ ai_comment: aiComment })
+          .eq('id', id)
+          .eq('user_id', user.id)
+      }
   }
 
   redirect('/')
