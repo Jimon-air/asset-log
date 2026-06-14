@@ -17,6 +17,7 @@ type Props = {
   initialTicker: string | null
   initialShares: number
   initialPurchasePrice: number
+  initialCurrentPrice: number | null
 }
 
 export default function HoldingEditForm({
@@ -25,6 +26,7 @@ export default function HoldingEditForm({
   initialTicker,
   initialShares,
   initialPurchasePrice,
+  initialCurrentPrice,
 }: Props) {
   const [state, formAction, pending] = useActionState(updateHolding, initialState)
 
@@ -33,6 +35,9 @@ export default function HoldingEditForm({
   )
   const [priceDisplay, setPriceDisplay] = useState(
     initialPurchasePrice > 0 ? initialPurchasePrice.toLocaleString('ja-JP') : ''
+  )
+  const [currentPriceDisplay, setCurrentPriceDisplay] = useState(
+    initialCurrentPrice != null ? initialCurrentPrice.toLocaleString('ja-JP') : ''
   )
 
   return (
@@ -99,6 +104,23 @@ export default function HoldingEditForm({
                 inputMode="numeric"
                 value={priceDisplay}
                 onChange={(e) => setPriceDisplay(formatWithComma(e.target.value))}
+                placeholder="0"
+                className="h-10 rounded-lg border border-black/[.08] bg-white px-3 text-right text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/[.1] dark:bg-zinc-900 dark:placeholder:text-zinc-500 dark:focus:ring-white/20"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="current_price" className="text-sm font-medium text-foreground">
+                現在価格
+                <span className="ml-1 text-xs font-normal text-zinc-400">（円・任意）</span>
+              </label>
+              <input type="hidden" name="current_price" value={currentPriceDisplay} />
+              <input
+                id="current_price"
+                type="text"
+                inputMode="numeric"
+                value={currentPriceDisplay}
+                onChange={(e) => setCurrentPriceDisplay(formatWithComma(e.target.value))}
                 placeholder="0"
                 className="h-10 rounded-lg border border-black/[.08] bg-white px-3 text-right text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/[.1] dark:bg-zinc-900 dark:placeholder:text-zinc-500 dark:focus:ring-white/20"
               />

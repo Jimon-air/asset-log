@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import AssetsBarChart, { type ChartData } from '@/components/AssetsBarChart'
 import DeleteSnapshotButton from '@/components/DeleteSnapshotButton'
+import ExportCsvButton from '@/components/ExportCsvButton'
+import TrendSummaryButton from '@/components/TrendSummaryButton'
 
 type Snapshot = {
   id: string
@@ -154,8 +156,17 @@ export default async function Home() {
               </div>
             )}
 
-            {/* テーブル */}
-            <div className="overflow-x-auto rounded-xl border border-black/[.08] bg-white dark:border-white/[.1] dark:bg-zinc-900">
+            {/* トレンド分析（2ヶ月以上ある場合のみ表示） */}
+            {rows.length >= 2 && <TrendSummaryButton />}
+
+            {/* テーブルヘッダー行 */}
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">履歴</p>
+              <ExportCsvButton rows={rows} />
+            </div>
+
+            {/* テーブル（md以上） */}
+            <div className="hidden overflow-x-auto rounded-xl border border-black/[.08] bg-white dark:border-white/[.1] dark:bg-zinc-900 md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-black/[.06] dark:border-white/[.08]">
@@ -173,7 +184,6 @@ export default async function Home() {
                 </thead>
                 <tbody>
                   {rows.map((row, i) => {
-                    // rows は降順なので次要素が前月
                     const prev = rows[i + 1]
                     let momText = '—'
                     let momColor = ''
@@ -189,63 +199,98 @@ export default async function Home() {
                           ? 'text-red-600 dark:text-red-400'
                           : ''
                     }
-
                     return (
                       <React.Fragment key={row.id}>
-                      <tr
-                        className={`${row.ai_comment ? '' : 'border-b border-black/[.04] last:border-0 dark:border-white/[.05]'}`}
-                      >
-                        <td className="px-4 py-3 font-medium text-foreground">
-                          {formatMonth(row.snapshot_month)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          {formatAmount(row.cash_amount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          {formatAmount(row.investment_trust_amount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          {formatAmount(row.stock_amount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          {formatAmount(row.buying_power_amount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                          {formatAmount(row.other_amount)}
-                        </td>
-                        <td className="px-4 py-3 text-right font-medium text-foreground">
-                          {formatAmount(row.total_amount)}
-                        </td>
-                        <td className={`px-4 py-3 text-right font-medium ${momColor}`}>
-                          {momText}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <Link
-                              href={`/snapshots/${row.id}/edit`}
-                              className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
-                            >
-                              編集
+                        <tr className={`${row.ai_comment ? '' : 'border-b border-black/[.04] last:border-0 dark:border-white/[.05]'}`}>
+                          <td className="px-4 py-3 font-medium text-foreground">
+                            <Link href={`/snapshots/${row.id}`} className="underline-offset-2 hover:underline">
+                              {formatMonth(row.snapshot_month)}
                             </Link>
-                            <DeleteSnapshotButton id={row.id} />
-                          </div>
-                        </td>
-                      </tr>
-                      {row.ai_comment && (
-                        <tr className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]">
-                          <td
-                            colSpan={9}
-                            className="px-4 pb-3 pt-0 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500"
-                          >
-                            ✨ {row.ai_comment}
+                          </td>
+                          <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.cash_amount)}</td>
+                          <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.investment_trust_amount)}</td>
+                          <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.stock_amount)}</td>
+                          <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.buying_power_amount)}</td>
+                          <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.other_amount)}</td>
+                          <td className="px-4 py-3 text-right font-medium text-foreground">{formatAmount(row.total_amount)}</td>
+                          <td className={`px-4 py-3 text-right font-medium ${momColor}`}>{momText}</td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              <Link href={`/snapshots/${row.id}/edit`} className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200">編集</Link>
+                              <DeleteSnapshotButton id={row.id} />
+                            </div>
                           </td>
                         </tr>
-                      )}
+                        {row.ai_comment && (
+                          <tr className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]">
+                            <td colSpan={9} className="px-4 pb-3 pt-0 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
+                              ✨ {row.ai_comment}
+                            </td>
+                          </tr>
+                        )}
                       </React.Fragment>
                     )
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* カードリスト（スマホ） */}
+            <div className="flex flex-col gap-3 md:hidden">
+              {rows.map((row, i) => {
+                const prev = rows[i + 1]
+                let momText = '—'
+                let momColor = ''
+                if (prev) {
+                  const diff = row.total_amount - prev.total_amount
+                  const pct = (diff / prev.total_amount) * 100
+                  const sign = pct >= 0 ? '+' : ''
+                  momText = `${sign}${pct.toFixed(1)}%`
+                  momColor =
+                    pct > 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : pct < 0
+                      ? 'text-red-600 dark:text-red-400'
+                      : ''
+                }
+                return (
+                  <div key={row.id} className="rounded-xl border border-black/[.08] bg-white p-4 dark:border-white/[.1] dark:bg-zinc-900">
+                    <div className="mb-3 flex items-center justify-between">
+                      <Link href={`/snapshots/${row.id}`} className="font-semibold text-foreground underline-offset-2 hover:underline">
+                      {formatMonth(row.snapshot_month)}
+                    </Link>
+                      <span className={`text-sm font-medium ${momColor}`}>{momText}</span>
+                    </div>
+                    <div className="mb-3 flex items-end justify-between">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">合計</span>
+                      <span className="text-lg font-bold text-foreground">{formatAmount(row.total_amount)}</span>
+                    </div>
+                    <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      {[
+                        { label: '現金', value: row.cash_amount },
+                        { label: '投資信託', value: row.investment_trust_amount },
+                        { label: '株式', value: row.stock_amount },
+                        { label: '買付余力', value: row.buying_power_amount },
+                        { label: 'その他', value: row.other_amount },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex justify-between gap-2">
+                          <span className="text-zinc-500 dark:text-zinc-400">{label}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{formatAmount(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {row.ai_comment && (
+                      <p className="mb-3 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
+                        ✨ {row.ai_comment}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-end gap-3 border-t border-black/[.04] pt-3 dark:border-white/[.05]">
+                      <Link href={`/snapshots/${row.id}/edit`} className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200">編集</Link>
+                      <DeleteSnapshotButton id={row.id} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </>
         )}
