@@ -16,10 +16,7 @@ export async function generateAssetComment(
   const apiKey = process.env.GEMINI_API_KEY
   const model = process.env.GEMINI_MODEL ?? 'gemini-1.5-flash'
 
-  if (!apiKey) {
-    console.error('[Gemini] GEMINI_API_KEY is not set')
-    return null
-  }
+  if (!apiKey) return null
 
   const {
     totalAmount,
@@ -63,17 +60,13 @@ ${goalText}`
       }
     )
 
-    if (!res.ok) {
-      console.error('[Gemini] API error:', res.status, await res.text())
-      return null
-    }
+    if (!res.ok) return null
 
     const json = await res.json()
     const text: string | undefined =
       json?.candidates?.[0]?.content?.parts?.[0]?.text
     return text?.trim() ?? null
-  } catch (e) {
-    console.error('[Gemini] fetch error:', e)
+  } catch {
     return null
   }
 }
