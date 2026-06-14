@@ -20,7 +20,7 @@ export default async function EditHoldingPage({
 
   const { data: holding } = await supabase
     .from('stock_holdings')
-    .select('id, name, ticker, shares, purchase_price')
+    .select('id, name, ticker, shares, purchase_price, current_price')
     .eq('id', id)
     .eq('user_id', user.id)
     .maybeSingle()
@@ -36,6 +36,7 @@ export default async function EditHoldingPage({
       initialTicker={holding.ticker}
       initialShares={holding.shares}
       initialPurchasePrice={holding.purchase_price}
+      initialCurrentPrice={holding.current_price ?? null}
     />
   )
 }

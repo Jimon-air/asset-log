@@ -30,6 +30,8 @@ export async function createHolding(
   const ticker = (formData.get('ticker') as string).trim() || null
   const shares = parseAmount(formData.get('shares') as string)
   const purchasePrice = parseAmount(formData.get('purchase_price') as string)
+  const currentPriceRaw = (formData.get('current_price') as string).trim()
+  const currentPrice = currentPriceRaw ? parseAmount(currentPriceRaw) : null
 
   const { error: insertError } = await supabase.from('stock_holdings').insert({
     user_id: user.id,
@@ -37,6 +39,7 @@ export async function createHolding(
     ticker,
     shares,
     purchase_price: purchasePrice,
+    current_price: currentPrice,
   })
 
   if (insertError) {
@@ -74,10 +77,12 @@ export async function updateHolding(
   const ticker = (formData.get('ticker') as string).trim() || null
   const shares = parseAmount(formData.get('shares') as string)
   const purchasePrice = parseAmount(formData.get('purchase_price') as string)
+  const currentPriceRaw = (formData.get('current_price') as string).trim()
+  const currentPrice = currentPriceRaw ? parseAmount(currentPriceRaw) : null
 
   const { error: updateError } = await supabase
     .from('stock_holdings')
-    .update({ name, ticker, shares, purchase_price: purchasePrice })
+    .update({ name, ticker, shares, purchase_price: purchasePrice, current_price: currentPrice })
     .eq('id', id)
     .eq('user_id', user.id)
 

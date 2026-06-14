@@ -9,6 +9,7 @@ type Holding = {
   ticker: string | null
   shares: number
   purchase_price: number
+  current_price: number | null
 }
 
 function formatAmount(value: number) {
@@ -28,7 +29,7 @@ export default async function HoldingsPage() {
 
   const { data, error } = await supabase
     .from('stock_holdings')
-    .select('id, name, ticker, shares, purchase_price')
+    .select('id, name, ticker, shares, purchase_price, current_price')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -63,7 +64,7 @@ export default async function HoldingsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-black/[.06] dark:border-white/[.08]">
-                  {['銘柄名', 'コード', '株数', '取得単価', '評価額（取得単価ベース）', ''].map((col, i) => (
+                  {['銘柄名', 'コード', '株数', '取得単価', '現在価格', '評価額', '含み損益', '損益率', ''].map((col, i) => (
                     <th
                       key={i}
                       className="px-4 py-3 text-right text-xs font-medium text-zinc-500 first:text-left dark:text-zinc-400"
@@ -74,37 +75,63 @@ export default async function HoldingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]"
-                  >
-                    <td className="px-4 py-3 font-medium text-foreground">{row.name}</td>
-                    <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                      {row.ticker ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                      {row.shares.toLocaleString('ja-JP')}
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
-                      {formatAmount(row.purchase_price)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-foreground">
-                      {formatAmount(row.shares * row.purchase_price)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <Link
-                          href={`/holdings/${row.id}/edit`}
-                          className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
-                        >
-                          編集
-                        </Link>
-                        <DeleteHoldingButton id={row.id} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((row) => {
+                  const costBasis = row.shares * row.purchase_price
+                  const currentValue = row.current_price != null ? row.shares * row.current_price : null
+                  const unrealized = currentValue != null ? currentValue - costBasis : null
+                  const unrealizedPct = unrealized != null && costBasis > 0
+                    ? (unrealized / costBasis) * 100
+                    : null
+                  const gainColor =
+                    unrealized == null ? ''
+                    : unrealized > 0 ? 'text-emerald-600 dark:text-emerald-400'
+                    : unrealized < 0 ? 'text-red-600 dark:text-red-400'
+                    : ''
+                  return (
+                    <tr
+                      key={row.id}
+                      className="border-b border-black/[.04] last:border-0 dark:border-white/[.05]"
+                    >
+                      <td className="px-4 py-3 font-medium text-foreground">{row.name}</td>
+                      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                        {row.ticker ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                        {row.shares.toLocaleString('ja-JP')}
+                      </td>
+                      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                        {formatAmount(row.purchase_price)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">
+                        {row.current_price != null ? formatAmount(row.current_price) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium text-foreground">
+                        {currentValue != null ? formatAmount(currentValue) : formatAmount(costBasis)}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-medium ${gainColor}`}>
+                        {unrealized != null
+                          ? `${unrealized >= 0 ? '+' : ''}${formatAmount(unrealized)}`
+                          : '—'}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-medium ${gainColor}`}>
+                        {unrealizedPct != null
+                          ? `${unrealizedPct >= 0 ? '+' : ''}${unrealizedPct.toFixed(1)}%`
+                          : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <Link
+                            href={`/holdings/${row.id}/edit`}
+                            className="text-xs text-zinc-400 underline-offset-2 hover:text-foreground hover:underline dark:text-zinc-500 dark:hover:text-zinc-200"
+                          >
+                            編集
+                          </Link>
+                          <DeleteHoldingButton id={row.id} />
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
