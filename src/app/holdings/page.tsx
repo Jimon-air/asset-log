@@ -63,7 +63,7 @@ export default async function HoldingsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-black/[.06] dark:border-white/[.08]">
-                  {['銘柄名', 'コード', '株数', '取得単価', '評価額', ''].map((col, i) => (
+                  {['銘柄名', 'コード', '株数', '取得単価', '評価額（取得単価ベース）', ''].map((col, i) => (
                     <th
                       key={i}
                       className="px-4 py-3 text-right text-xs font-medium text-zinc-500 first:text-left dark:text-zinc-400"

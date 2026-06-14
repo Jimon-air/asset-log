@@ -143,7 +143,7 @@ export default function EditSnapshotForm({ id, snapshotMonth, initialValues, mem
             disabled={pending}
             className="flex h-10 items-center justify-center rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:hover:bg-zinc-200"
           >
-            {pending ? '更新中...' : '更新する'}
+            {pending ? 'AIコメント生成中...' : '更新する'}
           </button>
         </form>
       </div>
