@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import AssetsBarChart, { type ChartData } from '@/components/AssetsBarChart'
 import DeleteSnapshotButton from '@/components/DeleteSnapshotButton'
 import ExportCsvButton from '@/components/ExportCsvButton'
+import TrendSummaryButton from '@/components/TrendSummaryButton'
 
 type Snapshot = {
   id: string
@@ -155,6 +156,9 @@ export default async function Home() {
               </div>
             )}
 
+            {/* トレンド分析（2ヶ月以上ある場合のみ表示） */}
+            {rows.length >= 2 && <TrendSummaryButton />}
+
             {/* テーブルヘッダー行 */}
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-medium text-foreground">履歴</p>
@@ -198,7 +202,11 @@ export default async function Home() {
                     return (
                       <React.Fragment key={row.id}>
                         <tr className={`${row.ai_comment ? '' : 'border-b border-black/[.04] last:border-0 dark:border-white/[.05]'}`}>
-                          <td className="px-4 py-3 font-medium text-foreground">{formatMonth(row.snapshot_month)}</td>
+                          <td className="px-4 py-3 font-medium text-foreground">
+                            <Link href={`/snapshots/${row.id}`} className="underline-offset-2 hover:underline">
+                              {formatMonth(row.snapshot_month)}
+                            </Link>
+                          </td>
                           <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.cash_amount)}</td>
                           <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.investment_trust_amount)}</td>
                           <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-300">{formatAmount(row.stock_amount)}</td>
@@ -248,7 +256,9 @@ export default async function Home() {
                 return (
                   <div key={row.id} className="rounded-xl border border-black/[.08] bg-white p-4 dark:border-white/[.1] dark:bg-zinc-900">
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="font-semibold text-foreground">{formatMonth(row.snapshot_month)}</span>
+                      <Link href={`/snapshots/${row.id}`} className="font-semibold text-foreground underline-offset-2 hover:underline">
+                      {formatMonth(row.snapshot_month)}
+                    </Link>
                       <span className={`text-sm font-medium ${momColor}`}>{momText}</span>
                     </div>
                     <div className="mb-3 flex items-end justify-between">
