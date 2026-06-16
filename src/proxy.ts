@@ -31,7 +31,9 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isPublicRoute =
-    path === '/login' || path.startsWith('/auth/callback')
+    path === '/login' ||
+    path.startsWith('/auth/callback') ||
+    path.startsWith('/api/cron/')
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()

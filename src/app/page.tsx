@@ -101,6 +101,26 @@ export default async function Home() {
               const remaining = goal - latest.total_amount
               const rate = (latest.total_amount / goal) * 100
               const achieved = remaining <= 0
+
+              // 直近最大3ヶ月の平均増加額からペースを予測
+              const diffs: number[] = []
+              for (let i = 0; i < Math.min(3, rows.length - 1); i++) {
+                diffs.push(rows[i].total_amount - rows[i + 1].total_amount)
+              }
+              const avgDiff = diffs.length > 0 ? diffs.reduce((a, b) => a + b, 0) / diffs.length : null
+
+              let forecastText: string | null = null
+              if (!achieved) {
+                if (avgDiff == null) {
+                  forecastText = null
+                } else if (avgDiff <= 0) {
+                  forecastText = '直近のペースでは目標達成が難しい状況です。'
+                } else {
+                  const monthsNeeded = Math.ceil(remaining / avgDiff)
+                  forecastText = `このペースが続けば、約${monthsNeeded}ヶ月後に目標達成の見込みです。`
+                }
+              }
+
               return (
                 <div className="mb-6 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.1] dark:bg-zinc-900">
                   <p className="mb-3 text-sm font-medium text-foreground">目標達成状況</p>
@@ -136,6 +156,9 @@ export default async function Home() {
                       style={{ width: `${Math.min(rate, 100).toFixed(1)}%` }}
                     />
                   </div>
+                  {forecastText && (
+                    <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{forecastText}</p>
+                  )}
                 </div>
               )
             })()}
